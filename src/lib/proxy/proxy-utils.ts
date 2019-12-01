@@ -1,20 +1,26 @@
 // const httpProxy = require('http-proxy');
 const httpProxy = require('http-proxy-middleware');
+const winston = require('winston');
 
-export const getProxyInstance = ({upstream,...config}, events = {})=>{
 
-  // const proxy =  httpProxy.createProxyServer({
-  const proxyInstance =  httpProxy({
-        target:upstream,
+export const getProxyInstance = ({upstream, ...config}, events = {}) => {
+
+    // const proxy =  httpProxy.createProxyServer({
+    let options = {
+        target: upstream,
         ws: true,
         changeOrigin: true,
-    });
 
-  if(events){
-      Object.entries(events).forEach(([key,fun])=>{
-          proxyInstance.on(key,fun);
-      });
-  }
+        logProvider: (provider) => winston,
+        ...events
+    };
+    const proxyInstance = httpProxy(options);
 
-  return proxyInstance;
+    // if(events){
+    //     Object.entries(events).forEach(([key,fun])=>{
+    //         proxyInstance.on(key,fun);
+    //     });
+    // }
+
+    return proxyInstance;
 };

@@ -17,12 +17,14 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
+    "cheerio": "^1.0.0-rc.3",
     "clear": "^0.1.0",
     "commander": "^4.0.1",
     "express": "^4.17.1",
     "figlet": "^1.2.4",
     "http-proxy": "^1.18.0",
-    "http-proxy-middleware": "^0.20.0"
+    "http-proxy-middleware": "^0.20.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@liftr/tscov": "^1.4.4",

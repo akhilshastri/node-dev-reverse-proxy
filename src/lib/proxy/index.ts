@@ -3,6 +3,7 @@ import express from 'express';
 const chalk = require('chalk');
 
 const app = express();
+const emptyFn =()=>{};
 
 const localServer = ({local})=>{
     app.listen(local.port,(e)=>{
@@ -23,10 +24,10 @@ const localServer = ({local})=>{
 
 const buildMiddleware=({proxy})=>{
     proxy.forEach(itm=>{
-        const [url,handller] = itm.mapping;
+        // const  = itm.mapping;
         debugger;
         app.use(
-            url,
+            itm.url,
             itm.instance
         );
 
@@ -37,14 +38,28 @@ const buildMiddleware=({proxy})=>{
 export const run = (config)=>{
 
     config.proxy = config.proxy.map(itm=>{
+        const [url,handller] = itm;
+        let respFn = typeof handller === "function" ? handller : (handller.resp||emptyFn) ;
         return ({
-            mapping:itm,
-            instance:getProxyInstance({itm,upstream:config.upstream})
+            url,
+            instance:getProxyInstance({itm,upstream:config.upstream},
+                {
+                    onProxyRes:(proxyRes, req, res)=>{
+                        // proxyRes.headers['x-added'] = 'foobar';
+                       const resp = respFn({
+                            url:proxyRes.url,
+                            headers:proxyRes.headers
+                       });
+
+                       if(resp.headers)   proxyRes.headers = resp.headers;
+                    },
+                    logLevel:'debug',
+                }
+                )
         })
 
     });
-debugger;
     buildMiddleware(config);
     localServer(config);
-    console.log(config);
+
 } ;
