@@ -1,0 +1,35 @@
+{
+  "name": "node-dev-reverse-proxy",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "pizza": "./dist/index.js"
+  },
+  "scripts": {
+    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "create": "npm run build && npm run test",
+    "build": "tsc -p .",
+    "buildw": "nodemon --watch 'src/**/*.ts' --exec tsc -p .",
+    "test": "sudo npm i -g && pizza",
+    "refresh": "rm -rf ./node_modules ./package-lock.json ./yarn-lock.json && yarn"
+  },
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "clear": "^0.1.0",
+    "commander": "^4.0.1",
+    "express": "^4.17.1",
+    "figlet": "^1.2.4",
+    "http-proxy": "^1.18.0",
+    "http-proxy-middleware": "^0.20.0"
+  },
+  "devDependencies": {
+    "@liftr/tscov": "^1.4.4",
+    "@types/express": "^4.17.2",
+    "@types/node": "^12.12.14",
+    "nodemon": "^2.0.1",
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.2"
+  }
+}
