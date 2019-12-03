@@ -2,6 +2,13 @@
 const httpProxy = require('http-proxy-middleware');
 const winston = require('winston');
 
+const logger = winston.createLogger({
+    level: 'info',
+    transports: [
+        new winston.transports.Console(),
+       // new winston.transports.File({ filename: 'combined.log' })
+    ]
+});
 
 export const getProxyInstance = ({upstream, ...config}, events = {}) => {
 
@@ -10,8 +17,8 @@ export const getProxyInstance = ({upstream, ...config}, events = {}) => {
         target: upstream,
         ws: true,
         changeOrigin: true,
-
-        logProvider: (provider) => winston,
+        logLevel:'debug',
+        logProvider: (provider) => logger,
         ...events
     };
     const proxyInstance = httpProxy(options);

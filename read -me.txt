@@ -1,0 +1,37 @@
+
+const local = {
+    port: 3000
+} ;
+
+const upstream = {
+    protocol: 'http',
+    host: 'localhost',
+    port: 6001,
+} ;
+
+
+const proxy = [
+
+    ['*', {
+        resp:(response)=>{
+
+            console.log(response.url);
+            response.headers['x-added'] = 'foobar-resp';
+            response.body.on('done',function(data){
+                const $$ = response.$.load(data.body);
+                $$('title').text('hello ');
+                data.body = $$.html() ;
+            })
+            return response;
+        }
+    }]
+
+]
+
+module.exports = {
+
+    local,
+    upstream,
+    proxy
+
+}

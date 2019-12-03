@@ -1,9 +1,19 @@
 import {getProxyInstance} from './proxy-utils';
 import express from 'express';
+
+const modifyResponse = require('./modify-response');
 const chalk = require('chalk');
+const cheerio = require('cheerio');
+const morgan = require('morgan');
+const cookiejar = require('cookiejar');
+const EventEmitter = require('events');
+
+class ResponseEmitter extends EventEmitter {}
 
 const app = express();
 const emptyFn =()=>{};
+
+app.use(morgan('tiny')) ;
 
 const localServer = ({local})=>{
     app.listen(local.port,(e)=>{
@@ -24,8 +34,6 @@ const localServer = ({local})=>{
 
 const buildMiddleware=({proxy})=>{
     proxy.forEach(itm=>{
-        // const  = itm.mapping;
-        debugger;
         app.use(
             itm.url,
             itm.instance
@@ -45,15 +53,27 @@ export const run = (config)=>{
             instance:getProxyInstance({itm,upstream:config.upstream},
                 {
                     onProxyRes:(proxyRes, req, res)=>{
-                        // proxyRes.headers['x-added'] = 'foobar';
-                       const resp = respFn({
-                            url:proxyRes.url,
-                            headers:proxyRes.headers
-                       });
+                        const setCookieHeaders = proxyRes.headers['set-cookie'] || [] ;
+                        const modifiedSetCookieHeaders = setCookieHeaders
+                                                .map(str => new cookiejar.Cookie(str));
 
-                       if(resp.headers)   proxyRes.headers = resp.headers;
-                    },
-                    logLevel:'debug',
+                        const responseEmitter = new ResponseEmitter();
+                        const resp = respFn({
+                            url:proxyRes.url,
+                            headers:proxyRes.headers,
+                            $:cheerio,
+                            body: responseEmitter,
+                            cookie : modifiedSetCookieHeaders
+                        });
+                        modifyResponse(res,proxyRes,(body)=>{
+                            const respbody = {body} ;
+                            responseEmitter.emit('done',respbody);
+                            return respbody.body ;
+                        });
+
+                       if(resp.headers) proxyRes.headers = resp.headers;
+                       if(resp.cookie)  proxyRes.headers['set-cookie'] = resp.cookie.map(cookie => cookie.toString());
+                    }
                 }
                 )
         })
